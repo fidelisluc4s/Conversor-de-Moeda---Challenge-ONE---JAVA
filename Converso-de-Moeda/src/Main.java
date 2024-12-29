@@ -1,8 +1,6 @@
 import br.com.alura.conversor.model.ConsultaMoeda;
 import br.com.alura.conversor.model.ConversorMoeda;
-import br.com.alura.conversor.model.Moeda;
 import br.com.alura.conversor.model.MoedaFiltrada;
-import com.google.gson.Gson;
 
 import java.util.Scanner;
 
@@ -10,43 +8,62 @@ public class Main {
     public static void main(String[] args) {
 
         Scanner leitura = new Scanner(System.in);
-        ConsultaMoeda m = new ConsultaMoeda();
+        ConsultaMoeda consultaMoeda = new ConsultaMoeda();
+        MoedaFiltrada moedafiltro = consultaMoeda.buscaMoedasFiltradas("EUR");
+        ConversorMoeda conversor = new ConversorMoeda(moedafiltro.getConversionRates());
+        boolean continuar = true;
 
-        //String jsonResposta = m.buscaMoeda("BRL");
+        while (continuar){
+            System.out.println("==========================================");
+            System.out.println("=== Conversor de Moedas === Escolha uma opção! ===");
+            System.out.println("1. Converter moedas");
+            System.out.println("2. Exibir taxas de câmbio disponíveis");
+            System.out.println("3. Sair");
 
-        //System.out.println(jsonResposta);
+            int opcao = leitura.nextInt();
+            leitura.nextLine();
 
-        try {
-            //Moeda moe = m.buscaMoeda("BRL");
-            //System.out.println(moe);
-            //System.out.println("base do codigo: "+moe.base_code());
-            //System.out.println("taxa de conversao para eur: "+moe.conversion_rates().EUR());
-            //System.out.println("ultima atualização: "+moe.time_last_update_utc());
+            switch (opcao) {
+                case 1 -> {
+                    // exibir a lista de moedas disponíveis
+                    System.out.println("Moedas disponíveis para conversão:");
+                    moedafiltro.getConversionRates().forEach((moeda, taxa) ->
+                            System.out.printf("%s: %.4f%n", moeda, taxa));
 
-            MoedaFiltrada moedafiltro = m.buscaMoedasFiltradas("EUR");
+                    // realizar a conversão
+                    System.out.print("\nInforme o valor a ser convertido: ");
+                    double valor = leitura.nextDouble();
+                    leitura.nextLine();
 
-            //conversao o objeto para json
-            //Gson gson = new Gson();
-            //String json = gson.toJson(moedafiltro);
+                    System.out.print("Informe a moeda de origem (ex: BRL): ");
+                    String origem = leitura.nextLine().toUpperCase();
 
-            //System.out.println("Obj no formato JSON");
-            //System.out.println(json);
+                    System.out.print("Informe a moeda de destino (ex: EUR): ");
+                    String destino = leitura.nextLine().toUpperCase();
 
-            //System.out.println(moedafiltro);
-            System.out.println("Informe o valor a se convertido $ ");
-            double valor = leitura.nextDouble();
+                    try {
+                        double resultado = conversor.converter(origem, destino, valor);
+                        System.out.printf("O valor convertido de %s para %s é: %.2f%n", origem, destino, resultado);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Erro: " + e.getMessage());
+                    }
+                }
+                case 2 -> {
+                    // exibir taxa de cambio
+                    System.out.println("Taxas de câmbio disponíveis:");
+                    moedafiltro.getConversionRates().forEach((moeda, taxa) ->
+                            System.out.printf("%s: %.4f%n", moeda, taxa));
+                }
+                case 3 -> {
+                    // Sai do programa
+                    continuar = false;
+                    System.out.println("Obrigado por usar o conversor de moedas!");
+                }
+                default -> System.out.println("Opção inválida! Tente novamente.");
+            }
 
-            System.out.println("Informe a moeda de origem (ex: BRL): ");
-            String origem = leitura.next();
+            System.out.println();
 
-            System.out.println("Inforem a moeda destino: ");
-            String destino = leitura.next();
-
-            double resultado = ConversorMoeda.converter(moedafiltro, origem, destino, valor);
-
-            System.out.printf("O valor convertido de %s para %s  é: %.2f%n",origem, destino, resultado);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
         }
     }
 }
